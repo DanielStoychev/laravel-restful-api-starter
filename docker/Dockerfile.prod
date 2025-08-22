@@ -1,0 +1,83 @@
+# Production Dockerfile for Laravel API Kit
+# Optimized for production with minimal footprint and security
+
+FROM php:8.2-apache as base
+
+# Install system dependencies and PHP extensions
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    libicu-dev \
+    zip \
+    unzip \
+    default-mysql-client \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        intl \
+        opcache \
+        sockets \
+    && pecl install redis \
+    && docker-php-ext-enable redis opcache \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
+# Configure Apache
+RUN a2enmod rewrite headers
+COPY ./docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+# Copy optimized PHP configuration for production
+COPY ./docker/php/production.ini /usr/local/etc/php/conf.d/production.ini
+
+# Build stage
+FROM base as build
+
+WORKDIR /var/www/html
+
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+
+# Copy application files
+COPY . .
+
+# Run Laravel optimizations
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && php artisan event:cache
+
+# Final production stage
+FROM base as production
+
+WORKDIR /var/www/html
+
+# Copy built application from build stage
+COPY --from=build --chown=www-data:www-data /var/www/html .
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Create non-root user
+USER www-data
+
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/api/health || exit 1
+
+CMD ["apache2-foreground"]

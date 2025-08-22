@@ -1,0 +1,65 @@
+# Development Dockerfile for Laravel API Kit
+# Optimized for development with all necessary PHP extensions and tools
+
+FROM php:8.2-apache
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    libicu-dev \
+    zip \
+    unzip \
+    nodejs \
+    npm \
+    default-mysql-client \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        intl \
+        opcache \
+        sockets \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
+# Configure Apache
+RUN a2enmod rewrite headers
+COPY ./apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+# Copy PHP configuration
+COPY ./php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Create Laravel directories with proper permissions
+RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+USER www-data
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]

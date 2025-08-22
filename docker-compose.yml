@@ -1,0 +1,171 @@
+version: '3.8'
+
+services:
+  # Laravel Application
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.dev
+      args:
+        - PHP_VERSION=8.2
+    container_name: laravel_api_kit_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./project:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    ports:
+      - "8000:80"
+    networks:
+      - laravel_api_kit
+    depends_on:
+      - db
+      - redis
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=laravel_api_kit
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=null
+      - MAIL_PASSWORD=null
+      - MAIL_ENCRYPTION=null
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: laravel_api_kit_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: laravel_api_kit
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - laravel_api_kit
+
+  # Redis for Caching and Queues
+  redis:
+    image: redis:7-alpine
+    container_name: laravel_api_kit_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redispassword
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel_api_kit
+
+  # Mailhog for Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: laravel_api_kit_mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - laravel_api_kit
+
+  # phpMyAdmin for Database Management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: laravel_api_kit_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: password
+    depends_on:
+      - db
+    networks:
+      - laravel_api_kit
+
+  # Queue Worker for Background Jobs
+  queue:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.dev
+      args:
+        - PHP_VERSION=8.2
+    container_name: laravel_api_kit_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./project:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    command: php artisan queue:work --verbose --tries=3 --timeout=90 --sleep=3
+    depends_on:
+      - db
+      - redis
+    networks:
+      - laravel_api_kit
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=laravel_api_kit
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  # Scheduler for Cron Jobs (optional)
+  scheduler:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.dev
+      args:
+        - PHP_VERSION=8.2
+    container_name: laravel_api_kit_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./project:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - laravel_api_kit
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=laravel_api_kit
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+networks:
+  laravel_api_kit:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local

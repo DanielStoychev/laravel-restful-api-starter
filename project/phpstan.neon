@@ -1,0 +1,36 @@
+parameters:
+    level: 8
+    paths:
+        - app
+        - database
+        - routes
+        - tests
+    
+    # Exclude files or directories
+    excludePaths:
+        - app/Console/Kernel.php
+        - app/Exceptions/Handler.php
+        - app/Http/Kernel.php
+        - bootstrap/cache
+        - storage
+        - vendor
+    
+    # Laravel-specific configurations
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    
+    # Ignore common Laravel patterns
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+        - '#Call to an undefined method Illuminate\\Database\\Query\\Builder#'
+        - '#Access to an undefined property App\\Models#'
+        - '#Cannot call method \w+\(\) on mixed#'
+        - '#Method .+ has parameter .+ with no type specified#'
+        
+    # Bootstrap Laravel for better analysis
+    bootstrapFiles:
+        - bootstrap/app.php
+    
+    # Include Laravel Larastan extension
+    includes:
+        - ./vendor/nunomaduro/larastan/extension.neon

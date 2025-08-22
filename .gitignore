@@ -1,0 +1,208 @@
+# Laravel API Kit - Git Ignore Rules
+
+# Laravel Framework
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+
+# Laravel specific
+bootstrap/cache/
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+!storage/app/.gitkeep
+!storage/framework/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+!storage/logs/.gitkeep
+
+# PHP
+composer.lock
+vendor/
+*.cache
+*.tmp
+
+# PHPStorm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Testing
+/coverage/
+coverage.xml
+.phpunit.result.cache
+storage/testing/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Database
+*.sqlite
+*.db
+database/*.sqlite
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Documentation generation
+/docs/html/
+/docs/latex/
+
+# Cache files
+.cache/
+.temp/
+.tmp/
+
+# Build artifacts
+/build/
+/dist/
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Editor temp files
+.swp
+.swo
+*~
+.#*
+#*#
+
+# API Documentation
+/public/docs/
+
+# Swagger
+storage/api-docs/
+
+# Laravel specific cache
+/bootstrap/cache/config.php
+/bootstrap/cache/packages.php
+/bootstrap/cache/routes.php
+/bootstrap/cache/services.php
+
+# Application
+public/mix-manifest.json
+public/js/app.js
+public/css/app.css
+
+# Environment
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.csr
+
+# Temporary files
+*.temp
+*.swp
+*.swo
+
+# Laravel Telescope (if installed)
+storage/telescope/
+
+# Laravel Horizon (if installed) 
+storage/horizon/
+
+# MacOS
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# JetBrains IDEs
+.idea/
+cmake-build-*/
+*.iws
+out/
+.idea_modules/
+
+# Project specific
+/project/public/storage
+/project/storage/app/public/uploads
+/project/.phpunit.result.cache
